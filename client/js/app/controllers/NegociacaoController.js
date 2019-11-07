@@ -6,11 +6,10 @@ class NegociacaoController{
         this._inputData = $('#data');
         this._inputQuantidade =  $('#quantidade');
         this._inputValor = $('#valor');
-        this._negociacoesView = new NegociacoesView($('#NegociacoesView'));
-        this._listaNegociacoes =  new Bind(new ListaNegociacoes(), this._negociacoesView, ['adiciona','esvazia']);
+
+        this._listaNegociacoes =  new Bind(new ListaNegociacoes(), new NegociacoesView($('#NegociacoesView')), 'adiciona','esvazia');
         
-        this._mensagemView = new MensagemView($('#MensagemView'));
-        this._mensagem = new Bind(new Mensagem(), this._mensagemView,['texto']);
+        this._mensagem = new Bind(new Mensagem(), new MensagemView($('#MensagemView')),'texto');
     }
 
     adiciona(event){
@@ -43,5 +42,18 @@ class NegociacaoController{
 
         this._inputData.focus();
 
+    }
+
+    importaNegociacoes(){
+        let service = new NegociacaoService();
+        service.obterNegociacoesSemana((err, negociacoes) => {
+            if(err){
+                this._mensagem.texto = err;
+                return;
+            }
+
+            negociacoes.forEach(negocicao => this._listaNegociacoes.adiciona(negocicao));
+            this._mensagem.texto = 'Negociações importada com suscesso';
+        });
     }
 }
