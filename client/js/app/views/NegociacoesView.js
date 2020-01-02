@@ -9,10 +9,10 @@ class NegociacoesView extends View{
         <table class="table table-hover table-bordered">
             <thead>
                 <tr>
-                    <th>DATA</th>
-                    <th>QUANTIDADE</th>
-                    <th>VALOR</th>
-                    <th>VOLUME</th>
+                    <th onclick="negociacao.ordena('data')">DATA</th>
+                    <th onclick="negociacao.ordena('quantidade')">QUANTIDADE</th>
+                    <th onclick="negociacao.ordena('valor')">VALOR</th>
+                    <th onclick="negociacao.ordena('volume')">VOLUME</th>
                 </tr>
             </thead>
                 ${model.negociacoes.map(n => 
