@@ -53,4 +53,12 @@ class NegociacaoService{
         });
         
     }
+
+    obterNegociacoes(){
+        return Promise.all([
+            this.obterNegociacoesSemana(),
+            this.obterNegociacoesSemanaAnterior(),
+            this.obterNegociacoesSemanaRetrasada()]
+        );
+    }
 }

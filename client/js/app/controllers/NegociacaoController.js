@@ -12,28 +12,56 @@ class NegociacaoController{
         this._listaNegociacoes =  new Bind(new ListaNegociacoes(), new NegociacoesView($('#NegociacoesView')), 'adiciona','esvazia','ordena','inverterOrdem');
         
         this._mensagem = new Bind(new Mensagem(), new MensagemView($('#MensagemView')),'texto');
+
+        ConnectionFactory
+            .getConnection()
+            .then(connecatio => {
+                new NegociacaoDao(connecatio)
+                    .listaTodos()
+                    .then(negociacoes => {
+                        negociacoes.forEach(negocicao => this._listaNegociacoes.adiciona(negocicao));
+                    })
+            }).catch(erro => {
+                console.log(erro);
+                this._mensagem = erro;
+            });
     }
 
     adiciona(event){
         event.preventDefault();
 
-        this._listaNegociacoes.adiciona(this._criaNegociacao());
-        this._mensagem.texto = "Negociação adicionada com suscesso!";
+        ConnectionFactory
+            .getConnection()
+            .then(conexao => {
+                let negociacao = this._criaNegociacao();
+                new NegociacaoDao(conexao)
+                    .adiciona(negociacao)
+                        .then(() => {
+                            this._listaNegociacoes.adiciona(this._criaNegociacao());
+                            this._mensagem.texto = "Negociação adicionada com suscesso!";
+                            this._limpaFormulario();
+                        }).catch(erro => {this._mensagem.texto = erro;});
+            })
 
-        this._limpaFormulario();
+        
     }
 
     apaga(){
-        this._listaNegociacoes.esvazia();
-        this._mensagem.texto = "Negociações apagadas com suscesso";
-
+        ConnectionFactory
+            .getConnection()
+            .then(connection => new NegociacaoDao(connection))
+            .then(dao => dao.apagaTodos())
+            .then(messagem => {
+                this._listaNegociacoes.esvazia();
+                this._mensagem.texto = messagem;
+            });
     }
 
     _criaNegociacao(){
         return new Negociacao(
             DateHelper.textoParaData(this._inputData.value),
-            this._inputQuantidade.value,
-            this._inputValor.value
+            parseInt(this._inputQuantidade.value),
+            parseFloat(this._inputValor.value)
         );
     }
 
@@ -49,12 +77,12 @@ class NegociacaoController{
     importaNegociacoes(){
         let service = new NegociacaoService();
         
-        Promise.all([
-            service.obterNegociacoesSemana(),
-            service.obterNegociacoesSemanaAnterior(),
-            service.obterNegociacoesSemanaRetrasada()]
-        ).then(negociacoes => {
-            console.log(negociacoes);
+        service.obterNegociacoes()
+        .then(negociacoes => 
+            negociacoes.filter(negocicao => 
+            !this._listaNegociacoes.negociacoes.some(negociacaoExistentes =>
+                JSON.stringify(negocicao) == JSON.stringify(negociacaoExistentes))))
+        .then(negociacoes => {
             negociacoes
             .reduce((arrayAchatado, array) => arrayAchatado.concat(array) , [])
             .forEach(negocicao => this._listaNegociacoes.adiciona(negocicao));
