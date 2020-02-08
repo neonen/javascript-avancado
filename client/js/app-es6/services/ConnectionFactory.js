@@ -1,12 +1,11 @@
-var ConnectionFactory = (function(){
 const stores = ['negociacaoes'];
 const dbName = 'aluraframe';
 const vesion = 4;
 
-var connection = null;
-var close = null;
+let connection = null;
+let close = null;
 
-return class ConnectionFactory {
+export class ConnectionFactory {
 
     constructor() {
         throw new Error('Não é possivel criar Intancia');
@@ -49,4 +48,3 @@ return class ConnectionFactory {
         }
     }
 }
-})();
